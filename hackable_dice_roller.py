@@ -1,6 +1,6 @@
 # hackable_dice_roller.rolls
 from __future__ import annotations
-# from typing import Callable, Dict, List, Tuple
+from typing import Callable
 from random import normalvariate, randrange, seed
 import traceback
 import numpy as np
@@ -17,14 +17,16 @@ def multiply_currying(x):
 
 class Die:
     def __init__(self,
-                 die: callable[..., float],
+                 die: Callable[..., float],
                  die_name: str = "",
-                 transform: callable[[float], float] = None,
+                 transform: Callable[[float], float] = None,
                  *die_args):
         self._die = die
         self._name = die_name
         self._transform = transform
         self._die_args = die_args
+
+        self._die_value: float = 0
 
         self.die_roll()
 
@@ -32,25 +34,33 @@ class Die:
         roll = self._die(*self._die_args)
         if self._transform is not None:
             roll = self._transform(roll)
-        return roll
+        self._die_value = roll
+        return self._die_value
 
-    def get_die_name(self):
+    def get_die_value(self) -> float:
+        return self._die_value
+
+    def get_die_name(self) -> str:
         return self._name
+
+    def __str__(self):
+        return f"{self.get_die_name()}: {self.get_die_value()} "
 
 
 class IntegerDie(Die):
     def __init__(self,
-                 transform: callable[[float], float] = None,
+                 transform: Callable[[float], float] = None,
                  sides: int = 6,
                  bottom: int = 1):
+        if sides <= 0:
+            raise ValueError("Parameter 'die' must be at least 1")
+
         super().__init__(randrange,
                          "d" + str(sides),
                          transform,
                          bottom,
                          bottom + sides,
                          1)
-        if sides <= 0:
-            raise ValueError("Parameter 'die' must be at least 1")
 
     #     self._die_roll()
     #
@@ -62,7 +72,7 @@ class Dice:
 
     def __init__(self,
                  die: Die,
-                 transform_fn: callable[[float], float] = None,
+                 transform_fn: Callable[[float], float] = None,
                  number_of_dice: int = 1):
         if number_of_dice < 1:
             raise ValueError("Parameter 'number_of_dice' to roll must be at l.")
@@ -116,7 +126,7 @@ class Dice:
             to_numpy_list.append(self._total)
         return np.asarray(to_numpy_list)
 
-    def dice_to_pands(self, with_total: bool=False):
+    def dice_to_pands(self, with_total: bool = False):
         header = self.get_headers(with_total)
         data = self.get_rolls()
         if with_total:
@@ -131,7 +141,7 @@ class Rolls:
 
     def __int__(self,
                 dice: Dice,
-                transform_fn: callable[[float], float] = None,
+                transform_fn: Callable[[float], float] = None,
                 number_of_rolls: int = 1):
         if number_of_rolls < 1:
             raise ValueError("Parameter 'number_of_rolls' must be at l.")
@@ -148,7 +158,7 @@ class Rolls:
 
     def roll_n_times(self) -> tuple[list[list[float]], list[float], float]:
         self.rolls_clear()
-        for _ in range (self._number_of_rolls):
+        for _ in range(self._number_of_rolls):
             self._dice.dice_roll()
             current_total = self._dice.get_total()
             self._total += current_total
@@ -159,7 +169,6 @@ class Rolls:
             self._total = self._transform_fn(self._total)
 
         return self._list_of_rolls, self._list_of_totals, self._total
-
 
     def rolls_clear(self):
         self._list_of_rolls = []
@@ -175,20 +184,35 @@ class Rolls:
     def get_total(self) -> float:
         return self._total
 
-    def get_rolls_headers(self):
-        None
+    def get_headers(self, with_totals: bool = False) -> list[str]:
+        headers = self._dice.get_headers(with_totals)
+        if with_totals:
+            headers.append('grand_total')
+        return headers
 
-    def flatten_rolls_object(self):
-        None
+    def flatten_rolls(self, with_totals: bool = False) -> list[list[float]]:
+        local_rolls = self.get_rolls()
+        if with_totals:
+            for i in range(len(local_rolls)):
+                local_rolls[i].append(self._list_of_totals[i])
+                local_rolls[i].append(self._total)
+        return local_rolls
 
-    def rolls_to_numpy(self):
-        None
+    def rolls_to_numpy(self, with_totals: bool = False):
+        return np.asarray(self.flatten_rolls(with_totals))
 
-    def rolls_to_pandas(self):
-        None
+    def rolls_to_pandas(self, with_totals: bool = False):
+        return pd.DataFrame(data=self.flatten_rolls(with_totals),
+                            columns=self.get_headers(with_totals))
+
+    def rolls_to_csv(self, path_or_buf=None) -> None:
+        self.rolls_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
+
+    def rolls_to_excel(self, excel_writer, float_format=None):
+        self.rolls_to_pandas(with_totals=True).to_excel(excel_writer, float_format)
 
     def __str__(self):
-        None
+        self.rolls_to_pandas(with_totals=True).to_string()
 
 
 # Press the green button in the gutter to run the script.
@@ -196,41 +220,44 @@ if __name__ == '__main__':
     seed(0)
 
     integer_die = IntegerDie()
-    assert integer_die.die_roll() == (4, 4)
-    assert IntegerDie(sides=100).die_roll() == (98, 98)
-    assert IntegerDie(bottom=1, sides=2).die_roll() == (2, 2)
-    assert IntegerDie(bottom=1, sides=1).die_roll() == (1, 1)
-    assert IntegerDie(transform=add_currying(9),  bottom=1, sides=1).die_roll() == (1, 10)
-    assert IntegerDie(bottom=-10, sides=6).die_roll() == (-6, -6)
-    assert IntegerDie(bottom=11, sides=6).die_roll() == (14, 14)
-    assert IntegerDie(bottom=0, sides=1).die_roll() == (0, 0)
-    try:
-        print(IntegerDie(bottom=1, sides=0).die_roll())
-    except ValueError as v:
-        print(v)
-        traceback.print_stack()
-
-    [print(integer_die.die_roll()) for _ in range(6)]
-
-    normal_die = Die(normalvariate)
-    print(normal_die.die_roll())
-    normal_die = Die(normalvariate, "normalvariate*20", multiply_currying(20), 0, 1)
-    print(normal_die.die_roll())
-
-
-    dice = Dice(IntegerDie(), None, 2)
-    [print(dice.dice_roll()) for _ in range(6)]
-
-    normal_die = Die(normalvariate, "normalvariate", None, 0, 1)
-    dice = Dice(die=normal_die, number_of_dice=2)
-    [print(dice.dice_roll()) for _ in range(6)]
-
-    Dice(IntegerDie(sides=100), number_of_dice=1).dice_roll()
-    try:
-        print(Dice(IntegerDie(), number_of_dice=0).dice_roll())
-    except ValueError as v:
-        print(v)
-        traceback.print_stack()
+    print(integer_die)
+    print(integer_die.die_roll())
+    print(integer_die.die_roll())
+    print(integer_die.die_roll())
+    print(integer_die.die_roll())
+    print(IntegerDie(sides=100))
+    print(IntegerDie(bottom=1, sides=2))
+    print(IntegerDie(bottom=1, sides=1))
+    # assert IntegerDie(transform=add_currying(9),  bottom=1, sides=1).die_roll() == (1, 10)
+    # assert IntegerDie(bottom=-10, sides=6).die_roll() == (-6, -6)
+    # assert IntegerDie(bottom=11, sides=6).die_roll() == (14, 14)
+    # assert IntegerDie(bottom=0, sides=1).die_roll() == (0, 0)
+    # try:
+    #     print(IntegerDie(bottom=1, sides=0).die_roll())
+    # except ValueError as v:
+    #     print(v)
+    #     traceback.print_stack()
+    #
+    # [print(integer_die.die_roll()) for _ in range(6)]
+    #
+    # normal_die = Die(normalvariate)
+    # print(normal_die.die_roll())
+    # normal_die = Die(normalvariate, "normalvariate*20", multiply_currying(20), 0, 1)
+    # print(normal_die.die_roll())
+    #
+    # dice = Dice(IntegerDie(), None, 2)
+    # [print(dice.dice_roll()) for _ in range(6)]
+    #
+    # normal_die = Die(normalvariate, "normalvariate", None, 0, 1)
+    # dice = Dice(die=normal_die, number_of_dice=2)
+    # [print(dice.dice_roll()) for _ in range(6)]
+    #
+    # Dice(IntegerDie(sides=100), number_of_dice=1).dice_roll()
+    # try:
+    #     print(Dice(IntegerDie(), number_of_dice=0).dice_roll())
+    # except ValueError as v:
+    #     print(v)
+    #     traceback.print_stack()
 
     #
     # assert RollInstruction().roll_n_times() == [([3], 3)]
