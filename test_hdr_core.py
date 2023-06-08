@@ -2,12 +2,19 @@
 import unittest
 import hackable_dice_roller as hdr
 from numpy.random import binomial
+
+
 class TestBinomial(unittest.TestCase):
 
     def test_binomial(self):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         print(self.binomial_die.get_die_value())
         assert 0 <= self.binomial_die.die_roll() <= 2
+
+    def test_multiply_currying_binomial(self):
+        self.binomial_die = hdr.Die(binomial, "binomial * 10", hdr.multiply_currying(10), 2, 0.5)
+        print(self.binomial_die.get_die_value())
+        assert self.binomial_die.die_roll() in [0, 10, 20]
 
 
 class TestIntegerDie(unittest.TestCase):
@@ -55,14 +62,22 @@ class TestIntegerDie(unittest.TestCase):
         self.assertRaises(ValueError, hdr.IntegerDie, bottom=1, sides=0)
 
 
-        # normal_die = Die(normalvariate)
-        # print(normal_die.die_roll())
-        # normal_die = Die(normalvariate, "normalvariate*20", multiply_currying(20), 0, 1)
-        # print(normal_die.die_roll())
-        #
-        # dice = Dice(IntegerDie(), None, 2)
-        # [print(dice.dice_roll()) for _ in range(6)]
-        #
+
+class TestBinomialDice(unittest.TestCase):
+
+
+    def test_1d_binomial(self):
+        self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
+        assert hdr.Dice(self.binomial_die).get_total() in {0, 1, 2}
+
+    def test_2d_binomial(self):
+        self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
+        assert hdr.Dice(self.binomial_die, number_of_dice=2).get_total() in {0, 1, 2, 3, 4}
+
+    def test_1d_binomial(self):
+        self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
+        assert hdr.Dice(self.binomial_die, transform_fn=hdr.add_currying(-10)).get_total() in {-10, -9, -8}
+
         # normal_die = Die(normalvariate, "normalvariate", None, 0, 1)
         # dice = Dice(die=normal_die, number_of_dice=2)
         # [print(dice.dice_roll()) for _ in range(6)]

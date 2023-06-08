@@ -1,8 +1,7 @@
 # hackable_dice_roller.rolls
 from __future__ import annotations
 from typing import Callable
-from random import normalvariate, randrange, seed
-import traceback
+from random import randrange
 import numpy as np
 import pandas as pd
 
@@ -13,7 +12,6 @@ def add_currying(x):
 
 def multiply_currying(x):
     return lambda y: x * y
-
 
 class Die:
     def __init__(self,
@@ -113,7 +111,7 @@ class Dice:
     def get_total(self) -> float:
         return self.total
 
-    def get_headers(self, with_total: bool = False) -> list[str] | None:
+    def get_headers(self, with_total: bool = False) -> list[str]:
         die_name = self.die.get_die_name()
         headers = [die_name + '_' + str(i) for i in range(self.number_of_dice)]
         if with_total:
@@ -121,8 +119,10 @@ class Dice:
             headers.append(total_name)
         return headers
 
-    def flatten_dice_data(self) -> list[float] | None:
-        return self.rolls.append(self.total)
+    def get_rolls_with_total(self) -> list[float]:
+        data = self.rolls.copy()
+        data.append(self.get_total())
+        return data
 
     def dice_to_numpy(self, with_total: bool = False):
         to_numpy_list = self.get_rolls()
@@ -130,16 +130,23 @@ class Dice:
             to_numpy_list.append(self.total)
         return np.asarray(to_numpy_list)
 
-    def dice_to_pands(self, with_total: bool = False):
+    def dice_to_pandas(self, with_total: bool = False):
         header = self.get_headers(with_total)
-        data = self.get_rolls()
         if with_total:
-            data.append(self.total)
-        return pd.DataFrame(data, columns=header, dtype=float)
+            data = self.get_rolls_with_total()
+        else:
+            data = self.get_rolls()
+        data = [data]
+        return pd.DataFrame(data,
+                            columns=header,
+                            index=None,
+                            dtype=float)
 
     def __str__(self):
-        self.dice_to_pands(with_total=True).to_string()
+        return self.dice_to_pandas(with_total=True).to_string()
 
+    def to_string(self):
+        return self.__str__()
 
 class Rolls:
 
