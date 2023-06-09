@@ -13,6 +13,7 @@ def add_currying(x):
 def multiply_currying(x):
     return lambda y: x * y
 
+
 class Die:
     def __init__(self,
                  die: Callable[..., float],
@@ -41,7 +42,10 @@ class Die:
     def get_die_name(self) -> str:
         return self.name
 
-    def __str__(self):
+    def to_string(self) -> str:
+        return self.__str__()
+
+    def __str__(self) -> str:
         return f"{self.get_die_name()}: {self.get_die_value()} "
 
 
@@ -65,9 +69,9 @@ class IntegerDie(Die):
              
     def get_bottom(self) -> int:
         return self.bottom
+
     def get_sides(self) -> int:
         return self.sides
-
 
 
 class Dice:
@@ -98,15 +102,18 @@ class Dice:
 
         return self.rolls, self.total
 
-    def clear(self):
+    def clear(self) -> type[None]:
         self.rolls = []
         self.total = 0
 
-    def get_number_of_dice(self):
+    def get_number_of_dice(self) -> int:
         return self.number_of_dice
 
     def get_rolls(self) -> list[float]:
-        return self.rolls.copy()
+        copy_list = []
+        for roll in self.rolls:
+            copy_list.append(roll)
+        return copy_list
 
     def get_total(self) -> float:
         return self.total
@@ -115,7 +122,7 @@ class Dice:
         die_name = self.die.get_die_name()
         headers = [die_name + '_' + str(i) for i in range(self.number_of_dice)]
         if with_total:
-            total_name = die_name + '_roll_total'
+            total_name = f"{self.number_of_dice}_*_{die_name}_roll_total"
             headers.append(total_name)
         return headers
 
@@ -142,18 +149,22 @@ class Dice:
                             index=None,
                             dtype=float)
 
-    def __str__(self):
+    def dice_to_csv(self, path_or_buf=None) -> None:
+        self.dice_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
+
+    def __str__(self) -> str:
         return self.dice_to_pandas(with_total=True).to_string()
 
-    def to_string(self):
+    def to_string(self) -> str:
         return self.__str__()
+
 
 class Rolls:
 
-    def __int__(self,
-                dice: Dice,
-                transform_fn: Callable[[float], float] = None,
-                number_of_rolls: int = 1):
+    def __init__(self,
+                 dice: Dice,
+                 transform_fn: Callable[[float], float] = None,
+                 number_of_rolls: int = 1):
         if number_of_rolls < 1:
             raise ValueError("Parameter 'number_of_rolls' must be at l.")
         self.dice = dice
@@ -187,10 +198,19 @@ class Rolls:
         self.total = 0
 
     def get_rolls(self) -> list[list[float]]:
-        return self.list_of_rolls.copy()
+        outer_list = []
+        for dice_list in self.list_of_rolls:
+            row = []
+            for die in dice_list:
+                row.append(die)
+            outer_list.append(row)
+        return outer_list
 
     def get_list_of_totals(self) -> list[float]:
-        return self.list_of_totals
+        dice_totals = []
+        for dice_total in self.list_of_totals:
+            dice_totals.append(dice_total)
+        return dice_totals
 
     def get_total(self) -> float:
         return self.total
@@ -213,8 +233,9 @@ class Rolls:
         return np.asarray(self.flatten_rolls(with_totals))
 
     def rolls_to_pandas(self, with_totals: bool = False):
-        return pd.DataFrame(data=self.flatten_rolls(with_totals),
-                            columns=self.get_headers(with_totals))
+        df = pd.DataFrame(data=self.flatten_rolls(with_totals),
+                          columns=self.get_headers(with_totals))
+        return df
 
     def rolls_to_csv(self, path_or_buf=None) -> None:
         self.rolls_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
@@ -222,9 +243,8 @@ class Rolls:
     def rolls_to_excel(self, excel_writer, float_format=None):
         self.rolls_to_pandas(with_totals=True).to_excel(excel_writer, float_format)
 
+    def to_string(self):
+        return self.__str__()
+
     def __str__(self):
-        self.rolls_to_pandas(with_totals=True).to_string()
-
-
-
-
+        return self.rolls_to_pandas(with_totals=True).to_string()

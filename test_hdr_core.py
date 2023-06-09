@@ -8,12 +8,10 @@ class TestBinomial(unittest.TestCase):
 
     def test_binomial(self):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
-        print(self.binomial_die.get_die_value())
         assert 0 <= self.binomial_die.die_roll() <= 2
 
     def test_multiply_currying_binomial(self):
         self.binomial_die = hdr.Die(binomial, "binomial * 10", hdr.multiply_currying(10), 2, 0.5)
-        print(self.binomial_die.get_die_value())
         assert self.binomial_die.die_roll() in [0, 10, 20]
 
 
@@ -26,10 +24,6 @@ class TestIntegerDie(unittest.TestCase):
     def test_name(self):
         self.integer_die = hdr.IntegerDie()
         self.assertEqual(self.integer_die.get_die_name(), 'd6', "Die name is not 'd6'")
-
-    def test_multiples_default_rolls(self):
-        self.integer_die = hdr.IntegerDie()
-        [print(self.integer_die.die_roll()) for _ in range(6)]
 
     def test_d100(self):
         self.integer_die = hdr.IntegerDie(sides=100)
@@ -81,45 +75,21 @@ class TestDice(unittest.TestCase):
     def test_must_have_at_least_1_die(self):
         self.assertRaises(ValueError, hdr.Dice, die=hdr.IntegerDie(), number_of_dice=0)
 
-        #
-        # assert RollInstruction().roll_n_times() == [([3], 3)]
-        # assert RollInstruction(times_to_roll=2).roll_n_times() == \
-        #        [([4], 4),
-        #         ([3], 3)]
-        # assert RollInstruction(number_of_dice=2,
-        #                        times_to_roll=4)\
-        #            .roll_n_times() == [([5, 2], 7),
-        #                                ([5, 2], 7),
-        #                                ([3, 2], 5),
-        #                                ([1, 5], 6)]
-        # assert RollInstruction(number_of_dice=1, die=100,
-        #                        bottom=1, times_to_roll=1)\
-        #            .roll_n_times() == [([33], 33)]
-        # assert RollInstruction(number_of_dice=2, die=100,
-        #                        bottom=1, times_to_roll=2)\
-        #            .roll_n_times() == [([69, 91], 160),
-        #                                ([78, 19], 97)]
-        # try:
-        #     print(RollInstruction(number_of_dice=1, die=6,
-        #                           bottom=1, times_to_roll=0)\
-        #           .roll_n_times())
-        # except ValueError as v:
-        #     print(v)
-        #     traceback.print_stack()
-        # try:
-        #     print(RollInstruction(number_of_dice=0, die=6,
-        #                           bottom=1, times_to_roll=1)\
-        #           .roll_n_times())
-        # except ValueError as v:
-        #     print(v)
-        #     traceback.print_stack()
-        # try:
-        #     print(RollInstruction(number_of_dice=1, die=0,
-        #                           bottom=1, times_to_roll=1)\
-        #           .roll_n_times())
-        # except ValueError as v:
-        #     print(v)
-        #     traceback.print_stack()
+
+class TestRolls(unittest.TestCase):
+
+    def test_1d1_transformed(self):
+        die = hdr.IntegerDie(sides=1)  # d6
+        one_d1 = hdr.Dice(die, number_of_dice=1)  # 2d60
+        self.assertEqual(10,
+                         hdr.Rolls(dice=one_d1, transform_fn=hdr.add_currying(9)).get_total(),
+                         "transformation of Rolls did not work.")  # 1d1*1 + 10
+
+    def test_number_of_rolls_is_0(self):
+        die = hdr.IntegerDie()  # d6
+        one_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
+        self.assertRaises(ValueError, hdr.Rolls, dice=one_d6, number_of_rolls=0)
+
 
 if __name__ == '__main__':
     unittest.main()
