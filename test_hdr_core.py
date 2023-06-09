@@ -63,7 +63,7 @@ class TestIntegerDie(unittest.TestCase):
 
 
 
-class TestBinomialDice(unittest.TestCase):
+class TestDice(unittest.TestCase):
 
 
     def test_1d_binomial(self):
@@ -74,20 +74,12 @@ class TestBinomialDice(unittest.TestCase):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         assert hdr.Dice(self.binomial_die, number_of_dice=2).get_total() in {0, 1, 2, 3, 4}
 
-    def test_1d_binomial(self):
+    def test_1d_binomial_with_transform(self):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         assert hdr.Dice(self.binomial_die, transform_fn=hdr.add_currying(-10)).get_total() in {-10, -9, -8}
 
-        # normal_die = Die(normalvariate, "normalvariate", None, 0, 1)
-        # dice = Dice(die=normal_die, number_of_dice=2)
-        # [print(dice.dice_roll()) for _ in range(6)]
-        #
-        # Dice(IntegerDie(sides=100), number_of_dice=1).dice_roll()
-        # try:
-        #     print(Dice(IntegerDie(), number_of_dice=0).dice_roll())
-        # except ValueError as v:
-        #     print(v)
-        #     traceback.print_stack()
+    def test_must_have_at_least_1_die(self):
+        self.assertRaises(ValueError, hdr.Dice, die=hdr.IntegerDie(), number_of_dice=0)
 
         #
         # assert RollInstruction().roll_n_times() == [([3], 3)]
