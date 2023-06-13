@@ -1,25 +1,48 @@
 # hackable_dice_roller.rolls
-from __future__ import annotations
+# from __future__ import annotations
 from typing import Callable
 from random import randrange
 import numpy as np
 import pandas as pd
 
 
-def add_currying(x):
+def add_currying(x: float):
+    """
+    add_curring supplies one float to which a curried float is added.
+    :param x: the provided number to add.
+    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value
+    """
     return lambda y: x + y
 
 
 def multiply_currying(x):
+    """
+    multiply_curring supplies one float with which a curried float is multiplied.
+    :param x: the provided number to multiply.
+    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value
+    """
     return lambda y: x * y
 
 
 class Die:
+    """
+    'Die' represents a physical polyhedral die or probability function.
+    """
     def __init__(self,
                  die: Callable[..., float],
                  die_name: str = "",
                  transform: Callable[[float], float] = None,
                  *die_args):
+        """
+
+        :param die:  A probability function from which hackable dice roller will draw one sample.
+        :param die_name: A string naming the parameter 'die'. The empty string is the default.
+        :param transform: A function which reserves one curried parameter where the result of a selected sample
+            can be placed.  The function must be curried, and since it must be lazily evaluated, it must be a Python
+            lambda.  This parameter is empty, or None by default.  'transform' may be removed in a future version
+            leaving all data transformation to post-processing.
+        :param die_args: positional arguments to the function provided as a parameter to 'die'.
+        """
         self.die = die
         self.name = die_name
         self.transform = transform
@@ -27,9 +50,12 @@ class Die:
 
         self.die_value: float = 0
 
-        self.die_roll()
+        self.die_roll()  # need in set up to populate all get methods with valid values
 
     def die_roll(self) -> float:
+        """
+        :return: returns one sample from 'die' as altered by 'transform'.
+        """
         roll = self.die(*self.die_args)
         if self.transform is not None:
             roll = self.transform(roll)
@@ -37,6 +63,7 @@ class Die:
         return self.die_value
 
     def get_die_value(self) -> float:
+        """Gets the value of a die which was previously rolled."""
         return self.die_value
 
     def get_die_name(self) -> str:
@@ -46,40 +73,70 @@ class Die:
         return self.__str__()
 
     def __str__(self) -> str:
-        return f"{self.get_die_name()}: {self.get_die_value()} "
+        return f"{self.get_die_name()}: {self.get_die_value()}"
 
 
 class IntegerDie(Die):
+    """
+    IntegerDie is used to model a polyhedral die, or any other range of integers with an arbitrary starting point.
+    It wraps random.randrange().
+    """
     def __init__(self,
                  transform: Callable[[float], float] = None,
                  sides: int = 6,
                  bottom: int = 1):
+        """
+        Used to model one pseudo-random  selection from an arbitrary range of integers.
+        :param transform:  A function which reserves one curried parameter where the result of a selected sample
+            can be placed.  The function must be curried, and since it must be lazily evaluated, it must be a Python
+            lambda.  This parameter is empty, or None by default.  'transform' may be removed in a future version
+            leaving all data transformation to post-processing.
+        :param sides: The number of sides on the polyhedral die, or more generally the size of the integer range.
+            It must be at least 1.
+        :param bottom: 'Floor' might have been a better name.  This is the inclusive start of the integer range.
+        """
         if sides <= 0:
             raise ValueError("Parameter 'die' must be at least 1")
 
-        super().__init__(randrange,
-                         "d" + str(sides),
+        super().__init__(randrange,  # the probability function
+                         "d" + str(sides),  # name
                          transform,
-                         bottom,
-                         bottom + sides,
-                         1)
-        
+                         bottom,  # arg0 = start
+                         bottom + sides,  # arg1 = stop
+                         1)  # arg2 = step = 1
+
         self.sides = sides
         self.bottom = bottom
              
     def get_bottom(self) -> int:
+        """Return the start of random.randrange()."""
         return self.bottom
 
     def get_sides(self) -> int:
+        """Return random.randrange()'s stop"""
         return self.sides
 
 
 class Dice:
+    """
+    'Dice' represents one 'throw' of N dice with the same number of sides, or N distinct single samples of the same
+    probability function.
+    """
 
     def __init__(self,
                  die: Die,
                  transform_fn: Callable[[float], float] = None,
                  number_of_dice: int = 1):
+        """
+        'Dice' represents one throw of 'number_of_dice' having the same number of sides or
+        the same probability function.
+        :param die: an object of class Die in this submodule which models the kind of dice used in this throw.
+        :param transform_fn: A function which reserves one curried parameter where the result of a selected sample
+            can be placed.  The function must be curried, and since it must be lazily evaluated, it must be a Python
+            lambda.  This parameter is empty, or None by default.  'transform' may be removed in a future version
+            leaving all data transformation to post-processing.  This transforms the dice throw's total only.
+        :param number_of_dice: The number of times to throw the die.  It must be at least 1.
+        """
         if number_of_dice < 1:
             raise ValueError("Parameter 'number_of_dice' to roll must be at l.")
         self.die = die
@@ -89,7 +146,7 @@ class Dice:
         self.rolls: list[float] = []
         self.total: float = 0
 
-        self.dice_roll()
+        self.dice_roll()  # initializes 'get' methods.
 
     def dice_roll(self) -> tuple[list[float], float]:
         self.clear()
@@ -150,7 +207,7 @@ class Dice:
                             dtype=float)
 
     def dice_to_csv(self, path_or_buf=None) -> None:
-        self.dice_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
+        self.dice_to_pandas(with_total=True).to_csv(path_or_buf=path_or_buf)
 
     def __str__(self) -> str:
         return self.dice_to_pandas(with_total=True).to_string()
@@ -240,8 +297,10 @@ class Rolls:
     def rolls_to_csv(self, path_or_buf=None) -> None:
         self.rolls_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
 
-    def rolls_to_excel(self, excel_writer, float_format=None):
-        self.rolls_to_pandas(with_totals=True).to_excel(excel_writer, float_format)
+    def rolls_to_excel(self, excel_writer, sheet_name='Sheet1', float_format=None):
+        self.rolls_to_pandas(with_totals=True).to_excel(excel_writer,
+                                                        sheet_name=sheet_name,
+                                                        float_format=float_format)
 
     def to_string(self):
         return self.__str__()

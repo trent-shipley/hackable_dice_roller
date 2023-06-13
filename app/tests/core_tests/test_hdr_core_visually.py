@@ -1,7 +1,8 @@
 # test_hdr_core_visually
 import unittest
-import hackable_dice_roller as hdr
+from app.core import hackable_dice_roller as hdr
 from numpy.random import binomial
+from os.path import dirname
 
 
 class TestWithVisualVerification(unittest.TestCase):
@@ -19,6 +20,9 @@ class TestWithVisualVerification(unittest.TestCase):
         print(self.integer_die.get_die_value())  # auto-populates on creation
         [print(self.integer_die.die_roll()) for _ in range(30)]
 
+    def test_2d6_to_numpy(self):
+        print(hdr.Dice(die=hdr.IntegerDie(), number_of_dice=2).dice_to_numpy())
+
     def test_2d_binomial(self):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         self.binomial_dice = hdr.Dice(self.binomial_die, number_of_dice=2)
@@ -27,6 +31,12 @@ class TestWithVisualVerification(unittest.TestCase):
         for _ in range(29):
             self.binomial_dice.dice_roll()
             print(self.binomial_dice)
+
+    def test_2d_binomial_to_csv(self):
+        dice_test_csv = dirname(__file__) + '/' + 'dice_test.csv'
+        print(dice_test_csv)
+        self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
+        hdr.Dice(self.binomial_die, number_of_dice=2).dice_to_csv(dice_test_csv)
 
 
 class TestRolls(unittest.TestCase):
@@ -56,6 +66,29 @@ class TestRolls(unittest.TestCase):
         print(roll_x2.rolls_to_pandas(with_totals=False))
         print(roll_x2.rolls_to_pandas(with_totals=True))
         print(roll_x2)
+
+    def test_2d6_x2_to_numpy(self):
+        die = hdr.IntegerDie()  # d6
+        one_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
+        roll_x2 = hdr.Rolls(dice=one_d6, number_of_rolls=2)  # 2d6*2
+        print(roll_x2.rolls_to_numpy())
+
+    def test_2d6_x2_to_csv(self):
+        rolls_test_csv = dirname(__file__) + '/' + 'rolls_test.csv'
+        print(rolls_test_csv)
+        die = hdr.IntegerDie()  # d6
+        one_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
+        roll_x2 = hdr.Rolls(dice=one_d6, number_of_rolls=2)  # 2d6*2
+        roll_x2.rolls_to_csv(rolls_test_csv)
+
+    def test_2d6_x2_to_xlsx(self):
+        rolls_test_xlsx = dirname(__file__) + '/' + 'rolls_test.xlsx'
+        print(rolls_test_xlsx)
+        die = hdr.IntegerDie()  # d6
+        one_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
+        roll_x2 = hdr.Rolls(dice=one_d6, number_of_rolls=2)  # 2d6*2
+        roll_x2.rolls_to_excel(rolls_test_xlsx)
+
 
 
 if __name__ == '__main__':

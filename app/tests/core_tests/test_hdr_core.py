@@ -1,6 +1,6 @@
 # test_hdr_core
 import unittest
-import hackable_dice_roller as hdr
+from app.core import hackable_dice_roller as hdr
 from numpy.random import binomial
 
 
@@ -19,7 +19,10 @@ class TestIntegerDie(unittest.TestCase):
 
     def test_create_and_re_roll(self):
         self.integer_die = hdr.IntegerDie()
-        assert self.integer_die.get_bottom() <=  self.integer_die.get_die_value() <= self.integer_die.get_sides()
+        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() <= self.integer_die.get_sides()
+
+    def test_create_and_str(self):
+        self.assertRegex(hdr.IntegerDie().to_string(), r"^d6: \d+$")
 
     def test_name(self):
         self.integer_die = hdr.IntegerDie()
@@ -27,7 +30,7 @@ class TestIntegerDie(unittest.TestCase):
 
     def test_d100(self):
         self.integer_die = hdr.IntegerDie(sides=100)
-        assert self.integer_die.get_bottom() <=  self.integer_die.get_die_value() <= self.integer_die.get_sides()
+        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() <= self.integer_die.get_sides()
 
     def test_d2(self):
         self.integer_die = hdr.IntegerDie(sides=2)
@@ -40,7 +43,7 @@ class TestIntegerDie(unittest.TestCase):
     def test_add_currying(self):
         self.integer_die = hdr.IntegerDie(transform=hdr.add_currying(9), sides=1)
         self.assertEqual(self.integer_die.get_die_value(), 10,
-                          f"The addition is wrong: {self.integer_die.get_die_value()}")
+                         f"The addition is wrong: {self.integer_die.get_die_value()}")
 
     def test_negative_bottom(self):
         self.integer_die = hdr.IntegerDie(bottom=-10, sides=6)
@@ -56,9 +59,7 @@ class TestIntegerDie(unittest.TestCase):
         self.assertRaises(ValueError, hdr.IntegerDie, bottom=1, sides=0)
 
 
-
 class TestDice(unittest.TestCase):
-
 
     def test_1d_binomial(self):
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
