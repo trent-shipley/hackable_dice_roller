@@ -9,7 +9,7 @@ def add_currying(x: float):
     """
     add_curring supplies one float to which a curried float is added.
     :param x: the provided number to add.
-    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value
+    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value.
     """
     return lambda y: x + y
 
@@ -18,7 +18,7 @@ def multiply_currying(x):
     """
     multiply_curring supplies one float with which a curried float is multiplied.
     :param x: the provided number to multiply.
-    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value
+    :return: The results of a currying lambda which accepts a parameter 'y' as the curried value.
     """
     return lambda y: x * y
 
@@ -112,7 +112,7 @@ class IntegerDie(Die):
         return self.bottom
 
     def get_sides(self) -> int:
-        """Return random.randrange()'s stop"""
+        """Return random.randrange()'s stop."""
         return self.sides
 
 
@@ -166,7 +166,7 @@ class Dice:
     def clear(self) -> type[None]:
         """
         clears the list of rolls and the throw's total so the next throw is tabla rasa.
-        :return: None is returned
+        :return: None.
         """
         self.rolls = []
         self.total = 0
@@ -227,7 +227,7 @@ class Dice:
         """
         Converts the list to a one-row pandas DataFrame
         :param with_total: includes the throw's total if True.
-        :return: A one-row pandas DataFrame
+        :return: A one-row pandas DataFrame.
         """
         header = self.get_headers(with_total)
         if with_total:
@@ -243,8 +243,8 @@ class Dice:
     def dice_to_csv(self, path_or_buf=None) -> None:
         """
         Uses pandas to output the dice roll and its total as a csv file.
-        :param path_or_buf: Where to save the csv output
-        :return: None
+        :param path_or_buf: Where to save the csv output.
+        :return: None.
         """
         self.dice_to_pandas(with_total=True).to_csv(path_or_buf=path_or_buf)
 
@@ -307,7 +307,7 @@ class Rolls:
     def rolls_clear(self) -> type[None]:
         """
         Clears the Rolls object for a subsequent set of dice rolls
-        :return: None
+        :return: None.
         """
         self.list_of_rolls = []
         self.list_of_totals = []
@@ -315,7 +315,7 @@ class Rolls:
 
     def get_rolls(self) -> list[list[float]]:
         """
-        :return: Makes a deep copy of the 2-D list of die rolls and returns it
+        :return: Makes a deep copy of the 2-D list of die rolls and returns it.
         """
         outer_list = []
         for dice_list in self.list_of_rolls:
@@ -336,7 +336,7 @@ class Rolls:
 
     def get_total(self) -> float:
         """
-        :return: The grand total of all the Die throws
+        :return: The grand total of all the Die throws.
         """
         return self.total
 
@@ -354,8 +354,7 @@ class Rolls:
     def get_rolls_with_totals(self) -> list[list[float]]:
         """
         Appends totals to the raw 2-D list of Die rolls
-        :param with_totals: If True append the row's total and the grand total to each row.
-        :return: the 2-D list of die rolls with or without
+        :return: the 2-D list of die rolls with or without.
         """
         local_rolls = self.get_rolls()
         local_totals = self.get_list_of_totals()
