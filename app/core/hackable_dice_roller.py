@@ -388,7 +388,7 @@ class Rolls:
 
     def rolls_to_csv(self, path_or_buf=None) -> type[None]:
         """
-        Uses pandas to output to CSV.
+        Uses pandas to output to CSV with totals.
         :param path_or_buf: Where to save the CSV output
         :return: None. Outputs a CSV document as a side effect.
         """
