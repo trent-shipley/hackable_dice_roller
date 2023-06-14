@@ -1,5 +1,4 @@
 # hackable_dice_roller.rolls
-# from __future__ import annotations
 from typing import Callable
 from random import randrange
 import numpy as np
@@ -149,6 +148,11 @@ class Dice:
         self.dice_roll()  # initializes 'get' methods.
 
     def dice_roll(self) -> tuple[list[float], float]:
+        """
+        'dice_roll' emulates a throw of one or more polyhedral dice, or several independent selections from a
+        probability function
+        :return: 'dice' roll returns a list of rolls or experiments and the sum of the rolls or experiments' results.
+        """
         self.clear()
         for _ in range(self.number_of_dice):
             self.rolls.append(self.die.die_roll())
@@ -160,6 +164,10 @@ class Dice:
         return self.rolls, self.total
 
     def clear(self) -> type[None]:
+        """
+        clears the list of rolls and the throw's total so the next throw is tabla rasa.
+        :return: None is returned
+        """
         self.rolls = []
         self.total = 0
 
@@ -167,15 +175,27 @@ class Dice:
         return self.number_of_dice
 
     def get_rolls(self) -> list[float]:
+        """
+        :return: deep copies and returns the list of rolls.
+        """
         copy_list = []
         for roll in self.rolls:
             copy_list.append(roll)
         return copy_list
 
     def get_total(self) -> float:
+        """
+        :return: Returns the sum of dice or independent experiments in the throw.
+        """
         return self.total
 
     def get_headers(self, with_total: bool = False) -> list[str]:
+        """
+        Provides standard headers for a dice throw.  This may be useful to provide headers when converting a Dice roll
+        to pandas
+        :param with_total: includes a header for the throw's total if True.
+        :return: A string for use as a  table's header.
+        """
         die_name = self.die.get_die_name()
         headers = [die_name + '_' + str(i) for i in range(self.number_of_dice)]
         if with_total:
@@ -184,29 +204,48 @@ class Dice:
         return headers
 
     def get_rolls_with_total(self) -> list[float]:
+        """
+        This is a convenience function which appends the calculated total to the list of individual die rolls.
+        :return: [rolls].append total.
+        """
         data = self.rolls.copy()
         data.append(self.get_total())
         return data
 
     def dice_to_numpy(self, with_total: bool = False):
+        """
+        Converts the list from get_rolls_with_total to a numpy array.
+        :param with_total: includes the throw's total if True.
+        :return: A numpy array.
+        """
         to_numpy_list = self.get_rolls()
         if with_total:
             to_numpy_list.append(self.total)
         return np.asarray(to_numpy_list)
 
     def dice_to_pandas(self, with_total: bool = False):
+        """
+        Converts the list to a one-row pandas DataFrame
+        :param with_total: includes the throw's total if True.
+        :return: A one-row pandas DataFrame
+        """
         header = self.get_headers(with_total)
         if with_total:
             data = self.get_rolls_with_total()
         else:
             data = self.get_rolls()
-        data = [data]
+        data = [data]  # a list of a list makes pandas think this is a row in a table.
         return pd.DataFrame(data,
                             columns=header,
                             index=None,
                             dtype=float)
 
     def dice_to_csv(self, path_or_buf=None) -> None:
+        """
+        Uses pandas to output the dice roll and its total as a csv file.
+        :param path_or_buf: Where to save the csv output
+        :return: None
+        """
         self.dice_to_pandas(with_total=True).to_csv(path_or_buf=path_or_buf)
 
     def __str__(self) -> str:
