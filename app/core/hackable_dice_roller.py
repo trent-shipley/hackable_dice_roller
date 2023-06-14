@@ -256,11 +256,23 @@ class Dice:
 
 
 class Rolls:
-
+    """
+    Rolls represents several dice rolls or throws, and is effectively a list of dice rolls.  Rolls have a Dice object.
+    Dice represents one throw (or roll) of several similar dice. Dice have a Die object.
+    Die is a single die and its roll or one probability function experiment. Die are atomic.
+    """
     def __init__(self,
                  dice: Dice,
                  transform_fn: Callable[[float], float] = None,
                  number_of_rolls: int = 1):
+        """
+        Rolls is a list of Dice rolls.
+        :param dice: A Dice object which can be thrown to provide a dice roll.
+        :param transform_fn: A lambda function with one curried numeric parameter which accepts the grand total of
+            the rolls.
+        :param number_of_rolls: The number of times to throw the Dice.  (You can think of this as the number of rows
+            in a table of random experiments.)  .
+        """
         if number_of_rolls < 1:
             raise ValueError("Parameter 'number_of_rolls' must be at l.")
         self.dice = dice
@@ -272,9 +284,13 @@ class Rolls:
 
         self.total: float = 0
 
-        self.roll_n_times()
+        self.roll_n_times()  # ensures 'get' methods are populated.
 
     def roll_n_times(self) -> tuple[list[list[float]], list[float], float]:
+        """
+        Simulates several throws of a set of identical dice.
+        :return: A tuple of a 2-d list of die rolls, a list of each dice throw's total, and a grand total.
+        """
         self.rolls_clear()
         for _ in range(self.number_of_rolls):
             self.dice.dice_roll()
@@ -288,12 +304,19 @@ class Rolls:
 
         return self.list_of_rolls, self.list_of_totals, self.total
 
-    def rolls_clear(self):
+    def rolls_clear(self) -> type[None]:
+        """
+        Clears the Rolls object for a subsequent set of dice rolls
+        :return: None
+        """
         self.list_of_rolls = []
         self.list_of_totals = []
         self.total = 0
 
     def get_rolls(self) -> list[list[float]]:
+        """
+        :return: Makes a deep copy of the 2-D list of die rolls and returns it
+        """
         outer_list = []
         for dice_list in self.list_of_rolls:
             row = []
@@ -303,40 +326,82 @@ class Rolls:
         return outer_list
 
     def get_list_of_totals(self) -> list[float]:
+        """
+        :return: Makes a deep copy of the list of each Dice rolls total and returns it.
+        """
         dice_totals = []
         for dice_total in self.list_of_totals:
             dice_totals.append(dice_total)
         return dice_totals
 
     def get_total(self) -> float:
+        """
+        :return: The grand total of all the Die throws
+        """
         return self.total
 
     def get_headers(self, with_totals: bool = False) -> list[str]:
+        """
+        Creates a standard header to use with conversion of a Rolls object to a pandas.DataFrame or other table
+        :param with_totals: True indicates a header is included for a denormalized grand  total column.
+        :return: A string of headers as for a table.
+        """
         headers = self.dice.get_headers(with_totals)
         if with_totals:
             headers.append('grand_total')
         return headers
 
-    def flatten_rolls(self, with_totals: bool = False) -> list[list[float]]:
+    def get_rolls_with_totals(self) -> list[list[float]]:
+        """
+        Appends totals to the raw 2-D list of Die rolls
+        :param with_totals: If True append the row's total and the grand total to each row.
+        :return: the 2-D list of die rolls with or without
+        """
         local_rolls = self.get_rolls()
-        if with_totals:
-            for i in range(len(local_rolls)):
-                local_rolls[i].append(self.list_of_totals[i])
-                local_rolls[i].append(self.total)
+        local_totals = self.get_list_of_totals()
+        for i in range(len(local_rolls)):
+            local_rolls[i].append(local_totals[i])
+            local_rolls[i].append(self.total)
         return local_rolls
 
     def rolls_to_numpy(self, with_totals: bool = False):
-        return np.asarray(self.flatten_rolls(with_totals))
+        """
+        Converts the 2-D list of die rolls to a numpy array, either with or without totals
+        :param with_totals: If True, the row total and grand total are appended to the right two columns
+        :return: A numpy array of the die rolls, possibly with totals.
+        """
+        if with_totals:
+            return np.asarray(self.get_rolls_with_totals())
+        else:
+            return np.asarray(self.get_rolls())
 
     def rolls_to_pandas(self, with_totals: bool = False):
-        df = pd.DataFrame(data=self.flatten_rolls(with_totals),
-                          columns=self.get_headers(with_totals))
-        return df
+        """
+        Creates a pandas.DataFrame with standard column headings and a sequential index from the 2-D list of Die rolls.
+        :param with_totals: If true row and grand totals are included in the rightmost two columns.
+        :return: A pandas.DataFrame from the Die rolls, and possibly the totals.
+        """
+        if with_totals:
+            return pd.DataFrame(data=self.get_rolls_with_totals(), columns=self.get_headers(with_totals))
+        else:
+            return pd.DataFrame(data=self.get_rolls(), columns=self.get_headers(with_totals))
 
-    def rolls_to_csv(self, path_or_buf=None) -> None:
+    def rolls_to_csv(self, path_or_buf=None) -> type[None]:
+        """
+        Uses pandas to output to CSV.
+        :param path_or_buf: Where to save the CSV output
+        :return: None. Outputs a CSV document as a side effect.
+        """
         self.rolls_to_pandas(with_totals=True).to_csv(path_or_buf=path_or_buf)
 
-    def rolls_to_excel(self, excel_writer, sheet_name='Sheet1', float_format=None):
+    def rolls_to_excel(self, excel_writer, sheet_name='Sheet1', float_format=None) -> type[None]:
+        """
+        Converts to 2-D array of Die rolls, with totals, to Excel using pandas.
+        :param excel_writer: Where to save the output Excel document.  The file path.
+        :param sheet_name: The name of the sheet in the workbook.
+        :param float_format: How to format floating point numbers
+        :return: None, but outputs an Excel document as a side effect.
+        """
         self.rolls_to_pandas(with_totals=True).to_excel(excel_writer,
                                                         sheet_name=sheet_name,
                                                         float_format=float_format)

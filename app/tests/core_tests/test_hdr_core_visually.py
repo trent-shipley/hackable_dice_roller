@@ -62,7 +62,7 @@ class TestRolls(unittest.TestCase):
         print("\nroll 2d6 x 2")
         print(roll_x2.roll_n_times())
         print(roll_x2.get_headers(with_totals=True))
-        print(roll_x2.flatten_rolls(with_totals=True))
+        print(roll_x2.get_rolls_with_totals(with_totals=True))
         print(roll_x2.rolls_to_pandas(with_totals=False))
         print(roll_x2.rolls_to_pandas(with_totals=True))
         print(roll_x2)
