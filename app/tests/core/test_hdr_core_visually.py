@@ -31,7 +31,7 @@ class TestWithVisualVerification(unittest.TestCase):
         self.integer_die = hdr.IntegerDie()
         print("\nroll a d6 30 times")
         print(self.integer_die.get_die_value())  # autopopulates on creation
-        [print(self.integer_die.die_roll()) for _ in range(30)]
+        [print(self.integer_die.die_roll()) for _ in range(29)]
 
     def test_2d6_to_numpy(self):
         """

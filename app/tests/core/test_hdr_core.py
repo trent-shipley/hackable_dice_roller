@@ -100,8 +100,8 @@ class TestIntegerDie(unittest.TestCase):
         :return: None.
         """
         self.integer_die = hdr.IntegerDie(bottom=-10, sides=6)
-        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() <= \
-            self.integer_die.get_bottom() + self.integer_die.get_sides() - 1
+        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
+            self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_zero_bottom_with_d1(self):
         """
@@ -109,8 +109,8 @@ class TestIntegerDie(unittest.TestCase):
         :return: None.
         """
         self.integer_die = hdr.IntegerDie(bottom=0, sides=1)
-        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() <= \
-            self.integer_die.get_bottom() + self.integer_die.get_sides() - 1
+        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
+            self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_zero_sides(self):
         """

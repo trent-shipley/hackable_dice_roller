@@ -33,7 +33,6 @@ class Die:
                  transform: Callable[[float], float] = None,
                  *die_args):
         """
-
         :param die:  A probability function from which hackable dice roller will draw one sample.
         :param die_name: A string naming the parameter 'die'. The empty string is the default.
         :param transform: A function which reserves one curried parameter where the result of a selected sample
@@ -85,7 +84,7 @@ class IntegerDie(Die):
                  sides: int = 6,
                  bottom: int = 1):
         """
-        Used to model one pseudo-random  selection from an arbitrary range of integers.
+        Used to model one pseudo-random selection from an arbitrary range of integers.
         :param transform:  A function which reserves one curried parameter where the result of a selected sample
             can be placed.  The function must be curried, and since it must be lazily evaluated, it must be a Python
             lambda.  This parameter is empty, or None by default.  'transform' may be removed in a future version
@@ -137,7 +136,7 @@ class Dice:
         :param number_of_dice: The number of times to throw the die.  It must be at least 1.
         """
         if number_of_dice < 1:
-            raise ValueError("Parameter 'number_of_dice' to roll must be at l.")
+            raise ValueError("Parameter 'number_of_dice' to roll must be at least l.")
         self.die = die
         self.transform_fn = transform_fn
         self.number_of_dice = number_of_dice
@@ -269,7 +268,7 @@ class Rolls:
         Rolls is a list of Dice rolls.
         :param dice: A Dice object which can be thrown to provide a dice roll.
         :param transform_fn: A lambda function with one curried numeric parameter which accepts the grand total of
-            the rolls.
+            the rolls.  transform_fn may be removed in a future version
         :param number_of_rolls: The number of times to throw the Dice.  (You can think of this as the number of rows
             in a table of random experiments.)  .
         """
@@ -359,8 +358,8 @@ class Rolls:
         local_rolls = self.get_rolls()
         local_totals = self.get_list_of_totals()
         for i in range(len(local_rolls)):
-            local_rolls[i].append(local_totals[i])
-            local_rolls[i].append(self.total)
+            local_rolls[i].append(local_totals[i])  # row total
+            local_rolls[i].append(self.total)  # grand total
         return local_rolls
 
     def rolls_to_numpy(self, with_totals: bool = False):
