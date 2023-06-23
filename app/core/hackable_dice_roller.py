@@ -80,12 +80,12 @@ class IntegerDie(Die):
     It wraps random.randrange().
     """
     def __init__(self,
-                 transform: Callable[[float], float] = None,
+                 transform_fn: Callable[[float], float] = None,
                  sides: int = 6,
                  bottom: int = 1):
         """
         Used to model one pseudo-random selection from an arbitrary range of integers.
-        :param transform:  A function which reserves one curried parameter where the result of a selected sample
+        :param transform_fn:  A function which reserves one curried parameter where the result of a selected sample
             can be placed.  The function must be curried, and since it must be lazily evaluated, it must be a Python
             lambda.  This parameter is empty, or None by default.  'transform' may be removed in a future version
             leaving all data transformation to post-processing.
@@ -98,7 +98,7 @@ class IntegerDie(Die):
 
         super().__init__(randrange,  # the probability function
                          "d" + str(sides),  # name
-                         transform,
+                         transform_fn,
                          bottom,  # arg0 = start
                          bottom + sides,  # arg1 = stop
                          1)  # arg2 = step = 1

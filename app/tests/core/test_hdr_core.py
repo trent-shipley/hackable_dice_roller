@@ -89,7 +89,7 @@ class TestIntegerDie(unittest.TestCase):
         Check that the IntegerDie subclass can process a curried lambda function.
         :return: None.
         """
-        self.integer_die = hdr.IntegerDie(transform=hdr.add_currying(9), sides=1)
+        self.integer_die = hdr.IntegerDie(transform_fn=hdr.add_currying(9), sides=1)
         for _ in range(10):
             self.assertEqual(self.integer_die.get_die_value(), 10,
                              f"The addition is wrong: {self.integer_die.get_die_value()}")
