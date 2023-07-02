@@ -4,11 +4,13 @@ import argparse
 
 class SimpleHDRollCliParser:
 
-    def __init__(self):
+    def __init__(self)
         self.parser = argparse.ArgumentParser(add_help=True,
-                                              description="Hackable Dice Roller: "
+                                              description="simple_cli, Hackable Dice Roller: "
                                                           "A simple Python dice roller for the command line.")
 
+        self.parser.add_argument('--print-args', type=bool, default=False,
+                                 help="True or False. Set to True to have argument send to STDOUT. Default is False")
         self.parser.add_argument('--base', '-b', type=int, default='1',
                                  help='Where the dice roll starts, 7, 0, -3, etc. The default in 1.')
         self.parser.add_argument('--sides', '-s', type=int, default='6',
@@ -43,9 +45,13 @@ class SimpleHDRollCliParser:
                                       "Enter decimal less than one to divide."
                                       "--melt-grand-total is mutually exclusive with --add-grand-total")
 
+        self.parser.add_argument('--to-css', default=None,
+                                 help="The output path for a CSS file of the results.-")
+        self.parser.add_argument('--to-xlsx', default=None,
+                                 help="The output path for an Excel file of the results.")
+
     def parse(self):
         kwargs = self.parser.parse_args()
-        print(kwargs)
 
         if kwargs.add is not None and kwargs.mult is not None:
             raise SyntaxError("--add and --mult cannot both be used.")

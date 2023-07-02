@@ -1,6 +1,6 @@
 # test_hdr_core
 import unittest
-from app.core import hackable_dice_roller as hdr
+from src.core import core as hdr
 from numpy.random import binomial
 
 

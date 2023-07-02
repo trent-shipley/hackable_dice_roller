@@ -1,0 +1,23 @@
+Hackable Dice Roller
+
+Contributors: Trent Shipley
+
+
+The goal of this project is to create a GUI dice rolling application in Python for Linux, Windows, and Apple Computers.
+
+A simple core providing the required logical functionality has been written.
+
+It consists of:
+
+* A Die class representing one die or one random experiment on a probability function,
+* A Dice class which represents a throw of N many identical dice, and a
+* A Rolls class which represents a table of N-many Dice throws.
+
+The core class will also convert a set of rolls to a NumPy array, a pandas DataFrame, and using pandas will output
+an implicit pandas DataFrame as a CSS or Excel XLSX file.
+
+
+A CLI of questionable utility is under construction.
+
+
+Kivy has been provisionally selected as the "framework" for creating the GUI version of the application.
