@@ -1,6 +1,7 @@
 import sys
 sys.path.extend(['../..',
                  '../../src',
+                 '../../src/core',
                  '../../src/cli'])
 import unittest
 from src.cli import shdroll as shdr

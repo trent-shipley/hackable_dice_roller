@@ -4,13 +4,14 @@ import argparse
 
 class SimpleHDRollCliParser:
 
-    def __init__(self)
+    def __init__(self):
         self.parser = argparse.ArgumentParser(add_help=True,
                                               description="simple_cli, Hackable Dice Roller: "
                                                           "A simple Python dice roller for the command line.")
 
-        self.parser.add_argument('--print-args', type=bool, default=False,
-                                 help="True or False. Set to True to have argument send to STDOUT. Default is False")
+        self.parser.add_argument('--print-args',
+                                 action='store_true',
+                                 help='Print the arguments used if specified.')
         self.parser.add_argument('--base', '-b', type=int, default='1',
                                  help='Where the dice roll starts, 7, 0, -3, etc. The default in 1.')
         self.parser.add_argument('--sides', '-s', type=int, default='6',
