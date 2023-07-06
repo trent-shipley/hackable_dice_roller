@@ -25,7 +25,7 @@ class TestWithVisualVerification(unittest.TestCase):
         print("\n'roll' a binomial 'die' with two flips of a coin 30 times")
         for _ in range(30):
             self.binomial_die.die_roll()
-            print(self.binomial_die.get_die_value())
+            print(self.binomial_die.die_value())
 
     def test_default_integer_die_rolls(self):
         """
@@ -34,7 +34,7 @@ class TestWithVisualVerification(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie()
         print("\nroll a d6 30 times")
-        print(self.integer_die.get_die_value())  # autopopulates on creation
+        print(self.integer_die.die_value())  # autopopulates on creation
         [print(self.integer_die.die_roll()) for _ in range(29)]
 
     def test_2d6_to_numpy(self):
@@ -54,7 +54,7 @@ class TestWithVisualVerification(unittest.TestCase):
         print("\nroll 2_binomial, flipping a coin 2 times, 30 times")
         print(self.binomial_dice)  # auto populates
         for _ in range(29):
-            self.binomial_dice.dice_roll()
+            self.binomial_dice.dice_throw()
             print(self.binomial_dice)
 
     def test_2d_binomial_to_csv(self):
@@ -102,8 +102,8 @@ class TestRolls(unittest.TestCase):
         roll_x2 = hdr.Rolls(dice=one_d6, number_of_rolls=2)  # 2d6*2
         print("\nroll 2d6 x 2")
         print(roll_x2.roll_n_times())
-        print(roll_x2.get_headers(with_totals=True))
-        print(roll_x2.get_rolls_with_totals())
+        print(roll_x2.headers(with_totals=True))
+        print(roll_x2.rolls_with_totals())
         print(roll_x2.rolls_to_pandas(with_totals=False))
         print(roll_x2.rolls_to_pandas(with_totals=True))
         print(roll_x2)

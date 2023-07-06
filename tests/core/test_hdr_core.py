@@ -41,7 +41,7 @@ class TestIntegerDie(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie()
         for _ in range(50):
-            assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
+            assert self.integer_die.get_bottom() <= self.integer_die.die_value() < \
                    self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_create_and_str(self):
@@ -57,7 +57,7 @@ class TestIntegerDie(unittest.TestCase):
         :return: None.
         """
         self.integer_die = hdr.IntegerDie()
-        self.assertEqual(self.integer_die.get_die_name(), 'd6', "Die name is not 'd6'")
+        self.assertEqual(self.integer_die.die_name(), 'd6', "Die name is not 'd6'")
 
     def test_d100(self):
         """
@@ -66,7 +66,7 @@ class TestIntegerDie(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie(sides=100)
         for _ in range(300):
-            assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() <\
+            assert self.integer_die.get_bottom() <= self.integer_die.die_value() < \
                    self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_d2(self):
@@ -76,7 +76,7 @@ class TestIntegerDie(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie(sides=2)
         for _ in range(30):
-            assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
+            assert self.integer_die.get_bottom() <= self.integer_die.die_value() < \
                    self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_d1(self):
@@ -86,7 +86,7 @@ class TestIntegerDie(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie(sides=1)
         for _ in range(10):
-            assert self.integer_die.get_die_value() == 1
+            assert self.integer_die.die_value() == 1
 
     def test_add_currying(self):
         """
@@ -95,33 +95,33 @@ class TestIntegerDie(unittest.TestCase):
         """
         self.integer_die = hdr.IntegerDie(transform_fn=hdr.add_currying(9), sides=1)
         for _ in range(10):
-            self.assertEqual(self.integer_die.get_die_value(), 10,
-                             f"The addition is wrong: {self.integer_die.get_die_value()}")
+            self.assertEqual(self.integer_die.die_value(), 10,
+                             f"The addition is wrong: {self.integer_die.die_value()}")
 
     def test_negative_bottom(self):
         """
         Test that an intger die can start at a negative number
         :return: None.
         """
-        self.integer_die = hdr.IntegerDie(bottom=-10, sides=6)
-        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
-            self.integer_die.get_bottom() + self.integer_die.get_sides()
+        self.integer_die = hdr.IntegerDie(base=-10, sides=6)
+        assert self.integer_die.get_bottom() <= self.integer_die.die_value() < \
+               self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_zero_bottom_with_d1(self):
         """
         Show an integer die can start at zero.
         :return: None.
         """
-        self.integer_die = hdr.IntegerDie(bottom=0, sides=1)
-        assert self.integer_die.get_bottom() <= self.integer_die.get_die_value() < \
-            self.integer_die.get_bottom() + self.integer_die.get_sides()
+        self.integer_die = hdr.IntegerDie(base=0, sides=1)
+        assert self.integer_die.get_bottom() <= self.integer_die.die_value() < \
+               self.integer_die.get_bottom() + self.integer_die.get_sides()
 
     def test_zero_sides(self):
         """
         Show that an IntegerDie must have a positive number of sides.
         :return: None.
         """
-        self.assertRaises(ValueError, hdr.IntegerDie, bottom=1, sides=0)
+        self.assertRaises(ValueError, hdr.IntegerDie, base=1, sides=0)
 
 
 class TestDice(unittest.TestCase):
@@ -133,7 +133,7 @@ class TestDice(unittest.TestCase):
         """
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         for _ in range(50):
-            assert hdr.Dice(self.binomial_die).get_total() in {0, 1, 2}
+            assert hdr.Dice(self.binomial_die).total() in {0, 1, 2}
 
     def test_2d_binomial(self):
         """
@@ -142,7 +142,7 @@ class TestDice(unittest.TestCase):
         """
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         for _ in range(100):
-            assert hdr.Dice(self.binomial_die, number_of_dice=2).get_total() in {0, 1, 2, 3, 4}
+            assert hdr.Dice(self.binomial_die, number_of_dice=2).total() in {0, 1, 2, 3, 4}
 
     def test_1d_binomial_with_transform(self):
         """
@@ -151,7 +151,7 @@ class TestDice(unittest.TestCase):
         """
         self.binomial_die = hdr.Die(binomial, "binomial", None, 2, 0.5)
         for _ in range(50):
-            assert hdr.Dice(self.binomial_die, transform_fn=hdr.add_currying(-10)).get_total() in {-10, -9, -8}
+            assert hdr.Dice(self.binomial_die, transform_fn=hdr.add_currying(-10)).total() in {-10, -9, -8}
 
     def test_must_have_at_least_1_die(self):
         """
@@ -171,7 +171,7 @@ class TestRolls(unittest.TestCase):
         die = hdr.IntegerDie(sides=1)  # d6
         one_d1 = hdr.Dice(die, number_of_dice=1)  # 2d60
         self.assertEqual(10,
-                         hdr.Rolls(dice=one_d1, transform_fn=hdr.add_currying(9)).get_total(),
+                         hdr.Rolls(dice=one_d1, transform_fn=hdr.add_currying(9)).total(),
                          "transformation of Rolls did not work.")  # 1d1*1 + 10
 
     def test_number_of_rolls_is_0(self):
@@ -180,8 +180,8 @@ class TestRolls(unittest.TestCase):
         :return: None.
         """
         die = hdr.IntegerDie()  # d6
-        one_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
-        self.assertRaises(ValueError, hdr.Rolls, dice=one_d6, number_of_rolls=0)
+        two_d6 = hdr.Dice(die, number_of_dice=2)  # 2d6
+        self.assertRaises(ValueError, hdr.Rolls, dice=two_d6, number_of_rolls=0)
 
 
 if __name__ == '__main__':

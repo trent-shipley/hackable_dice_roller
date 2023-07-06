@@ -41,12 +41,12 @@ class Die:
             leaving all data transformation to post-processing.
         :param die_args: positional arguments to the function provided as a parameter to 'die'.
         """
-        self.die = die
-        self.name = die_name
-        self.transform = transform
-        self.die_args = die_args
+        self._die = die
+        self._name = die_name
+        self._transform = transform
+        self._die_args = die_args
 
-        self.die_value: float = 0
+        self._die_value: float = 0
 
         self.die_roll()  # need in set up to populate all get methods with valid values
 
@@ -54,24 +54,24 @@ class Die:
         """
         :return: returns one sample from 'die' as altered by 'transform'.
         """
-        roll = self.die(*self.die_args)
-        if self.transform is not None:
-            roll = self.transform(roll)
-        self.die_value = roll
-        return self.die_value
+        roll = self._die(*self._die_args)
+        if self._transform is not None:
+            roll = self._transform(roll)
+        self._die_value = roll
+        return self._die_value
 
-    def get_die_value(self) -> float:
+    def die_value(self) -> float:
         """Gets the value of a die which was previously rolled."""
-        return self.die_value
+        return self._die_value
 
-    def get_die_name(self) -> str:
-        return self.name
+    def die_name(self) -> str:
+        return self._name
 
     def to_string(self) -> str:
         return self.__str__()
 
     def __str__(self) -> str:
-        return f"{self.get_die_name()}: {self.get_die_value()}"
+        return f"{self.die_name()}: {self.die_value()}"
 
 
 class IntegerDie(Die):
@@ -82,7 +82,7 @@ class IntegerDie(Die):
     def __init__(self,
                  transform_fn: Callable[[float], float] = None,
                  sides: int = 6,
-                 bottom: int = 1):
+                 base: int = 1):
         """
         Used to model one pseudo-random selection from an arbitrary range of integers.
         :param transform_fn:  A function which reserves one curried parameter where the result of a selected sample
@@ -91,7 +91,7 @@ class IntegerDie(Die):
             leaving all data transformation to post-processing.
         :param sides: The number of sides on the polyhedral die, or more generally the size of the integer range.
             It must be at least 1.
-        :param bottom: 'Floor' might have been a better name.  This is the inclusive start of the integer range.
+        :param base: 'Floor' might have been a better name.  This is the inclusive start of the integer range.
         """
         if sides <= 0:
             raise ValueError("Parameter 'die' must be at least 1")
@@ -99,20 +99,20 @@ class IntegerDie(Die):
         super().__init__(randrange,  # the probability function
                          "d" + str(sides),  # name
                          transform_fn,
-                         bottom,  # arg0 = start
-                         bottom + sides,  # arg1 = stop
+                         base,  # arg0 = start
+                         base + sides,  # arg1 = stop
                          1)  # arg2 = step = 1
 
-        self.sides = sides
-        self.bottom = bottom
+        self._sides = sides
+        self._base = base
              
     def get_bottom(self) -> int:
         """Return the start of random.randrange()."""
-        return self.bottom
+        return self._base
 
     def get_sides(self) -> int:
         """Return random.randrange()'s stop."""
-        return self.sides
+        return self._sides
 
 
 class Dice:
@@ -137,78 +137,78 @@ class Dice:
         """
         if number_of_dice < 1:
             raise ValueError("Parameter 'number_of_dice' to roll must be at least l.")
-        self.die = die
-        self.transform_fn = transform_fn
-        self.number_of_dice = number_of_dice
+        self._die = die
+        self._transform_fn = transform_fn
+        self._number_of_dice = number_of_dice
 
-        self.rolls: list[float] = []
-        self.total: float = 0
+        self._throws: list[float] = []
+        self._total: float = 0
 
-        self.dice_roll()  # initializes 'get' methods.
+        self.dice_throw()  # initializes 'get' methods.
 
-    def dice_roll(self) -> tuple[list[float], float]:
+    def dice_throw(self) -> tuple[list[float], float]:
         """
         'dice_roll' emulates a throw of one or more polyhedral dice, or several independent selections from a
         probability function
         :return: 'dice' roll returns a list of rolls or experiments and the sum of the rolls or experiments' results.
         """
-        self.clear()
-        for _ in range(self.number_of_dice):
-            self.rolls.append(self.die.die_roll())
+        self._clear()
+        for _ in range(self._number_of_dice):
+            self._throws.append(self._die.die_roll())
 
-        self.total = sum(self.rolls)
-        if self.transform_fn is not None:
-            self.total = self.transform_fn(self.total)
+        self._total = sum(self._throws)
+        if self._transform_fn is not None:
+            self._total = self._transform_fn(self._total)
 
-        return self.rolls, self.total
+        return self._throws, self._total
 
-    def clear(self) -> type[None]:
+    def _clear(self) -> type[None]:
         """
         clears the list of rolls and the throw's total so the next throw is tabla rasa.
         :return: None.
         """
-        self.rolls = []
-        self.total = 0
+        self._throws = []
+        self._total = 0
 
-    def get_number_of_dice(self) -> int:
-        return self.number_of_dice
+    def number_of_dice(self) -> int:
+        return self._number_of_dice
 
-    def get_rolls(self) -> list[float]:
+    def throws(self) -> list[float]:
         """
         :return: deep copies and returns the list of rolls.
         """
         copy_list = []
-        for roll in self.rolls:
+        for roll in self._throws:
             copy_list.append(roll)
         return copy_list
 
-    def get_total(self) -> float:
+    def total(self) -> float:
         """
         :return: Returns the sum of dice or independent experiments in the throw.
         """
-        return self.total
+        return self._total
 
-    def get_headers(self, with_total: bool = False) -> list[str]:
+    def headers(self, with_total: bool = False) -> list[str]:
         """
         Provides standard headers for a dice throw.  This may be useful to provide headers when converting a Dice roll
         to pandas
         :param with_total: includes a header for the throw's total if True.
         :return: A string for use as a  table's header.
         """
-        die_name = self.die.get_die_name()
-        headers = [die_name + '_' + str(i) for i in range(self.number_of_dice)]
+        die_name = self._die.die_name()
+        headers = [die_name + '_' + str(i) for i in range(self._number_of_dice)]
         if with_total:
-            total_name = f"{self.number_of_dice}_*_{die_name}_roll_total"
+            total_name = f"{self._number_of_dice}_*_{die_name}_roll_total"
             headers.append(total_name)
         return headers
 
-    def get_rolls_with_total(self) -> list[float]:
+    def rolls_with_total(self) -> list[float]:
         """
         This is a convenience function which appends the calculated total to the list of individual die rolls.
         :return: [rolls].append total.
         """
-        data = self.rolls.copy()
-        data.append(self.get_total())
+        data = self._throws.copy()
+        data.append(self.total())
         return data
 
     def dice_to_numpy(self, with_total: bool = False):
@@ -217,9 +217,9 @@ class Dice:
         :param with_total: includes the throw's total if True.
         :return: A numpy array.
         """
-        to_numpy_list = self.get_rolls()
+        to_numpy_list = self.throws()
         if with_total:
-            to_numpy_list.append(self.total)
+            to_numpy_list.append(self._total)
         return np.asarray(to_numpy_list)
 
     def dice_to_pandas(self, with_total: bool = False):
@@ -228,11 +228,11 @@ class Dice:
         :param with_total: includes the throw's total if True.
         :return: A one-row pandas DataFrame.
         """
-        header = self.get_headers(with_total)
+        header = self.headers(with_total)
         if with_total:
-            data = self.get_rolls_with_total()
+            data = self.rolls_with_total()
         else:
-            data = self.get_rolls()
+            data = self.throws()
         data = [data]  # a list of a list makes pandas think this is a row in a table.
         return pd.DataFrame(data,
                             columns=header,
@@ -274,14 +274,14 @@ class Rolls:
         """
         if number_of_rolls < 1:
             raise ValueError("Parameter 'number_of_rolls' must be at l.")
-        self.dice = dice
-        self.transform_fn = transform_fn
-        self.number_of_rolls = number_of_rolls
+        self._dice = dice
+        self._transform_fn = transform_fn
+        self._number_of_rolls = number_of_rolls
 
-        self.list_of_rolls: list[list[float]] = []
-        self.list_of_totals: list[float] = []
+        self._list_of_rolls: list[list[float]] = []
+        self._list_of_totals: list[float] = []
 
-        self.total: float = 0
+        self._total: float = 0
 
         self.roll_n_times()  # ensures 'get' methods are populated.
 
@@ -290,76 +290,76 @@ class Rolls:
         Simulates several throws of a set of identical dice.
         :return: A tuple of a 2-d list of die rolls, a list of each dice throw's total, and a grand total.
         """
-        self.rolls_clear()
-        for _ in range(self.number_of_rolls):
-            self.dice.dice_roll()
-            current_total = self.dice.get_total()
-            self.total += current_total
-            self.list_of_totals.append(current_total)
-            self.list_of_rolls.append(self.dice.get_rolls())
+        self._clear()
+        for _ in range(self._number_of_rolls):
+            self._dice.dice_throw()
+            current_total = self._dice.total()
+            self._total += current_total
+            self._list_of_totals.append(current_total)
+            self._list_of_rolls.append(self._dice.throws())
 
-        if self.transform_fn is not None:
-            self.total = self.transform_fn(self.total)
+        if self._transform_fn is not None:
+            self._total = self._transform_fn(self._total)
 
-        return self.list_of_rolls, self.list_of_totals, self.total
+        return self._list_of_rolls, self._list_of_totals, self._total
 
-    def rolls_clear(self) -> type[None]:
+    def _clear(self) -> type[None]:
         """
         Clears the Rolls object for a subsequent set of dice rolls
         :return: None.
         """
-        self.list_of_rolls = []
-        self.list_of_totals = []
-        self.total = 0
+        self._list_of_rolls = []
+        self._list_of_totals = []
+        self._total = 0
 
-    def get_rolls(self) -> list[list[float]]:
+    def rolls(self) -> list[list[float]]:
         """
         :return: Makes a deep copy of the 2-D list of die rolls and returns it.
         """
         outer_list = []
-        for dice_list in self.list_of_rolls:
+        for dice_list in self._list_of_rolls:
             row = []
             for die in dice_list:
                 row.append(die)
             outer_list.append(row)
         return outer_list
 
-    def get_list_of_totals(self) -> list[float]:
+    def list_of_totals(self) -> list[float]:
         """
         :return: Makes a deep copy of the list of each Dice rolls total and returns it.
         """
         dice_totals = []
-        for dice_total in self.list_of_totals:
+        for dice_total in self._list_of_totals:
             dice_totals.append(dice_total)
         return dice_totals
 
-    def get_total(self) -> float:
+    def total(self) -> float:
         """
         :return: The grand total of all the Die throws.
         """
-        return self.total
+        return self._total
 
-    def get_headers(self, with_totals: bool = False) -> list[str]:
+    def headers(self, with_totals: bool = False) -> list[str]:
         """
         Creates a standard header to use with conversion of a Rolls object to a pandas.DataFrame or other table
         :param with_totals: True indicates a header is included for a denormalized grand  total column.
         :return: A string of headers as for a table.
         """
-        headers = self.dice.get_headers(with_totals)
+        headers = self._dice.headers(with_totals)
         if with_totals:
             headers.append('grand_total')
         return headers
 
-    def get_rolls_with_totals(self) -> list[list[float]]:
+    def rolls_with_totals(self) -> list[list[float]]:
         """
         Appends totals to the raw 2-D list of Die rolls
         :return: the 2-D list of die rolls with or without.
         """
-        local_rolls = self.get_rolls()
-        local_totals = self.get_list_of_totals()
+        local_rolls = self.rolls()
+        local_totals = self.list_of_totals()
         for i in range(len(local_rolls)):
             local_rolls[i].append(local_totals[i])  # row total
-            local_rolls[i].append(self.total)  # grand total
+            local_rolls[i].append(self._total)  # grand total
         return local_rolls
 
     def rolls_to_numpy(self, with_totals: bool = False):
@@ -369,9 +369,9 @@ class Rolls:
         :return: A numpy array of the die rolls, possibly with totals.
         """
         if with_totals:
-            return np.asarray(self.get_rolls_with_totals())
+            return np.asarray(self.rolls_with_totals())
         else:
-            return np.asarray(self.get_rolls())
+            return np.asarray(self.rolls())
 
     def rolls_to_pandas(self, with_totals: bool = False):
         """
@@ -380,9 +380,9 @@ class Rolls:
         :return: A pandas.DataFrame from the Die rolls, and possibly the totals.
         """
         if with_totals:
-            return pd.DataFrame(data=self.get_rolls_with_totals(), columns=self.get_headers(with_totals))
+            return pd.DataFrame(data=self.rolls_with_totals(), columns=self.headers(with_totals))
         else:
-            return pd.DataFrame(data=self.get_rolls(), columns=self.get_headers(with_totals))
+            return pd.DataFrame(data=self.rolls(), columns=self.headers(with_totals))
 
     def rolls_to_csv(self, path_or_buf=None) -> type[None]:
         """

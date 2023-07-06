@@ -46,8 +46,8 @@ class SimpleHDRollCliParser:
                                       "Enter decimal less than one to divide."
                                       "--melt-grand-total is mutually exclusive with --add-grand-total")
 
-        self.parser.add_argument('--to-css', default=None,
-                                 help="The output path for a CSS file of the results.-")
+        self.parser.add_argument('--to-csv', default=None,
+                                 help="The output path for a CSV file of the results.-")
         self.parser.add_argument('--to-xlsx', default=None,
                                  help="The output path for an Excel file of the results.")
 
