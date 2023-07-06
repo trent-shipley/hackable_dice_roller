@@ -17,7 +17,11 @@ The core class will also convert a set of rolls to a NumPy array, a pandas DataF
 an implicit pandas DataFrame as a CSS or Excel XLSX file.
 
 
-A CLI of questionable utility is under construction.
+A CLI for "throwing" a set of dice with the same number of sides has been created as shdroll.py (for simple hackable
+dice roller) in the hackable_dice_roller/src/cli folder.  See "python shdroll.py --help".
+
+
+Python packaging is not working.
 
 
 Kivy has been provisionally selected as the "framework" for creating the GUI version of the application.
