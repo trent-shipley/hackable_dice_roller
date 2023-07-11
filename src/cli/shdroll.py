@@ -1,5 +1,5 @@
 # shdroll.py
-from shdroll_cli_parser import SimpleHDRollCliParser
+from src.cli.shdroll_cli_parser import SimpleHDRollCliParser
 from src.api import core
 
 # parse tha command line arguments
