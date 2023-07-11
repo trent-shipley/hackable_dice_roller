@@ -1,11 +1,6 @@
 # shdroll.py
-# shdroll stands for simple hackable dice rol
-import sys
-sys.path.extend(['../..',
-                 '../../src'
-                 '../../src/core'])  # can't figure out how to make this go away
 from shdroll_cli_parser import SimpleHDRollCliParser
-from src.core import core
+from src.api import core
 
 # parse tha command line arguments
 parse_cli_args = SimpleHDRollCliParser()

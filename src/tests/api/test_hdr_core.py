@@ -1,10 +1,5 @@
-# test_hdr_core
-import sys
-sys.path.extend(['../..',
-                 '../../src',
-                 '../../src/core',])
 import unittest
-from src.core import core as hdr
+from src.api import core as hdr
 from numpy.random import binomial
 
 

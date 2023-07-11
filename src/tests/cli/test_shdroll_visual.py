@@ -1,13 +1,7 @@
-import sys
-sys.path.extend(['../..',
-                 '../../src',
-                 '../../src/core',
-                 '../../src/cli'])
-# from src.cli import shdroll as shdr
 import subprocess as sbp
 import unittest
 
-shdr_path = '../../src/cli/shdroll.py'
+shdr_path = '../../../src/cli/shdroll.py'
 
 """
 Need to automate
